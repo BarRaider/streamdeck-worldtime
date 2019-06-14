@@ -1,0 +1,236 @@
+﻿<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>BarRaider's World Time Clock</title>
+    <meta charset="utf-8" />
+</head>
+
+<body>
+    <script>
+
+        var websocket = null;
+        var pluginUUID = null;
+        var settingsCache = {};
+        var cityOffset = {};
+
+        var DestinationEnum = Object.freeze({ "HARDWARE_AND_SOFTWARE": 0, "HARDWARE_ONLY": 1, "SOFTWARE_ONLY": 2 })
+
+        var worldTimeAction = {
+
+            type: "com.barraider.worldtime",
+            constructior: function () {
+                this.onTickTimer = null;
+            },
+
+            onKeyDown: function (context, settings, coordinates, userDesiredState) {
+            },
+
+            onKeyUp: function (context, settings, coordinates, userDesiredState) {
+            },
+
+            onTick: function (context) {
+                var payload = settingsCache[context];
+                if (payload != null && payload.hasOwnProperty('city')) {
+                    var cityName = payload['city'];
+
+                    if (!cityOffset.hasOwnProperty(cityName)) {
+                        console.log("No data for " + cityName, cityOffset);
+                        this.GetCityOffset(cityName);
+                    }
+                    var offset = cityOffset[cityName];
+                    if (offset === undefined) {
+                        return;
+                    }
+
+                    let cityNameShort = "";
+                    let showCityName = false;
+                    if (payload.hasOwnProperty('showCityName') && payload['showCityName']) {
+                        showCityName = true;
+                        var idx = cityName.indexOf("/") + 1;
+                        cityNameShort = cityName.substring(idx).replace("_", " ");
+                        if (cityNameShort.length > 6) {
+                            cityNameShort = cityNameShort.slice(0, 5) + "-\r\n" + cityNameShort.substring(5);
+                        }
+                        else {
+                            cityNameShort = cityNameShort + "\r\n";
+                        }
+                    }
+                    var offsetTime = getDateFromOffset(offset);
+                    let strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2));
+
+                    if (showCityName) {
+                        strTime = cityNameShort + "\r\n" + strTime;
+                    }
+                    this.SetTitle(context, strTime);
+                }
+            },
+
+            onWillAppear: function (context, settings, coordinates) {
+
+                var self = this;
+                /*
+                var city = "";
+                if (settings != null && settings.hasOwnProperty('city')) {
+                    city = settings["city"];
+                    console.log("onWillAppear Received city: ", city);
+                }
+
+                if (settings != null && settings.hasOwnProperty('city')) {
+                    city = settings["city"];
+                    console.log("onWillAppear Received city: ", city);
+                }*/
+                console.log("onWillAppear settings: ", settings);
+                settingsCache[context] = settings;
+                self.onTickTimer = setInterval(function () { self.onTick(context); }, 1000);
+            },
+
+            SetTitle: function (context, titleText) {
+                var json = {
+                    "event": "setTitle",
+                    "context": context,
+                    "payload": {
+                        "title": "" + titleText,
+                        "target": DestinationEnum.HARDWARE_AND_SOFTWARE
+                    }
+                };
+
+                websocket.send(JSON.stringify(json));
+            },
+
+            SetSettings: function (context, settings) {
+                var json = {
+                    "event": "setSettings",
+                    "context": context,
+                    "payload": settings
+                };
+
+                websocket.send(JSON.stringify(json));
+                settingsCache[context] = settings;
+                console.log("New Settings", settings);
+                console.log("New JSON", JSON.stringify(json));
+            },
+
+            AddToSettings: function (context, newSettings) {
+                settingsCache[context]
+            },
+
+            GetCityOffset: function (cityName) {
+                let url = 'http://worldtimeapi.org/api/timezone/' + cityName;
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then((out) => {
+                        console.log('Received JSON ', out);
+                        let offset = out["utc_offset"];
+                        let num = Number(offset.slice(0, 3));
+                        cityOffset[cityName] = num;
+                    })
+                    .catch(err => { throw err });
+
+            }
+        };
+
+        function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, inInfo) {
+            pluginUUID = inPluginUUID
+
+            // Open the web socket
+            websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+            function registerPlugin(inPluginUUID) {
+                var json = {
+                    "event": inRegisterEvent,
+                    "uuid": inPluginUUID
+                };
+
+                websocket.send(JSON.stringify(json));
+            };
+
+            websocket.onopen = function () {
+                // WebSocket is connected, send message
+                registerPlugin(pluginUUID);
+            };
+
+            websocket.onmessage = function (evt) {
+                console.log("onmessage event received!");
+                // Received message from Stream Deck
+                var jsonObj = JSON.parse(evt.data);
+                console.log("onmessage json: ", jsonObj);
+                var event = jsonObj['event'];
+                var action = jsonObj['action'];
+                var context = jsonObj['context'];
+                var jsonPayload = jsonObj['payload'] || {};
+
+                if (event == "keyDown") {
+                    var settings = jsonPayload['settings'];
+                    var coordinates = jsonPayload['coordinates'];
+                    var userDesiredState = jsonPayload['userDesiredState'];
+                    worldTimeAction.onKeyDown(context, settings, coordinates, userDesiredState);
+                }
+                else if (event == "keyUp") {
+                    var settings = jsonPayload['settings'];
+                    var coordinates = jsonPayload['coordinates'];
+                    var userDesiredState = jsonPayload['userDesiredState'];
+                    worldTimeAction.onKeyUp(context, settings, coordinates, userDesiredState);
+                }
+                else if (event == "willAppear") {
+                    var settings = jsonPayload['settings'];
+                    var coordinates = jsonPayload['coordinates'];
+                    worldTimeAction.onWillAppear(context, settings, coordinates);
+                }
+                else if (event == "sendToPlugin") {
+                    console.log("sendToPlugin received payload: ", jsonPayload);
+                    if (jsonPayload != null && jsonPayload.hasOwnProperty('city')) {
+                        worldTimeAction.SetSettings(context, jsonPayload);
+                    }
+                    /*
+                                        if (jsonPayload.hasOwnProperty('city')) {
+
+                                            var cityName = jsonPayload['city'];
+                                            worldTimeAction.SetSettings(context, { "city": cityName });
+                                        }
+                    */
+                }
+                else if (event == "didReceiveSettings") {
+                    console.log("didReceiveSettings received payload: ", jsonPayload);
+                    if (jsonPayload != null && jsonPayload['settings'] != null) {
+                        worldTimeAction.SetSettings(context, jsonPayload['settings']);
+                    }
+                }
+            };
+
+            websocket.onclose = function () {
+                // Websocket is closed
+            };
+        };
+
+
+        function loadImageAsDataUri(url, callback) {
+            var image = new Image();
+
+            image.onload = function () {
+                var canvas = document.createElement("canvas");
+
+                canvas.width = this.naturalWidth;
+                canvas.height = this.naturalHeight;
+
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(this, 0, 0);
+                callback(canvas.toDataURL("image/png"));
+            };
+
+            image.src = url;
+        };
+
+        function getDateFromOffset(offset) {
+            var d = new Date();
+            var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+            var offsetTime = new Date(utc + (3600000 * offset));
+            return offsetTime;
+        }
+
+    </script>
+
+</body>
+
+</html>

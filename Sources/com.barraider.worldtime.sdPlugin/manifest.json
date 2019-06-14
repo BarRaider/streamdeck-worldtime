@@ -1,0 +1,42 @@
+{
+  "Actions": [
+    {
+      "Icon": "actionIcon",
+      "Name": "World Time",
+      "States": [
+        {
+          "Image": "globe",
+          "TitleAlignment": "middle",
+          "FontSize": "12"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Displays the local time in cities around the world",
+      "UUID": "com.barraider.worldtime"
+    }
+  ],
+  "SDKVersion": 2,
+  "Author": "BarRaider",
+  "Description": "Displays the local time in cities around the world",
+  "Name": "World Time",
+  "Icon": "pluginIcon",
+  "URL": "https://barraider.github.io/",
+  "CodePath": "index.html",
+  "PropertyInspectorPath": "worldtime_pi.html",
+  "Category": "BarRaider",
+  "CategoryIcon": "categoryIcon",
+  "Version": "1.1",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "4.3"
+  }
+}
