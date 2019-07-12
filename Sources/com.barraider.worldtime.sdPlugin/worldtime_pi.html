@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>BarRaider's World Time Clock</title>
+    <title>BarRaider's World Time PI Settings</title>
     <link rel="stylesheet" href="sdpi.css">
     <script src="common.js"></script>
 </head>
@@ -17,7 +17,7 @@
             <div class="sdpi-item-label">Choose City</div>
             <select class="sdpi-item-value select setvalueSelect sdProperty" id="city" onchange="setSettings()">
                 <option value="" selected>- Select City -</option>
-				<option value="Africa/Abidjan">Africa/Abidjan</option>
+                <option value="Africa/Abidjan">Africa/Abidjan</option>
                 <option value="Africa/Accra">Africa/Accra</option>
                 <option value="Africa/Algiers">Africa/Algiers</option>
                 <option value="Africa/Bissau">Africa/Bissau</option>
@@ -411,6 +411,13 @@
             <div class="sdpi-item-value">
                 <input id="showCityName" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
                 <label for="showCityName" class="sdpi-item-label"><span></span>Show city's name on button</label>
+            </div>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvShow24Hour">
+            <div class="sdpi-item-label">24 hours mode</div>
+            <div class="sdpi-item-value">
+                <input id="show24hours" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
+                <label for="show24hours" class="sdpi-item-label"><span></span>Disable to show as AM/PM</label>
             </div>
         </div>
     </div>

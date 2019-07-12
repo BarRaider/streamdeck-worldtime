@@ -57,8 +57,23 @@
                         }
                     }
                     var offsetTime = getDateFromOffset(offset);
-                    let strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2));
 
+                    let show24Hours = false;
+                    if (payload.hasOwnProperty('show24hours')) {
+                        show24Hours = payload['show24hours']
+                    }
+
+                    let strTime = "";
+                    if (show24Hours) {
+                        strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2));
+                    }
+                    else { // Use AM/PM mode
+                        let hours = offsetTime.getHours();
+                        let ampm = hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12; // the hour '0' should be '12'
+                        strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + ampm);
+                    }
                     if (showCityName) {
                         strTime = cityNameShort + "\r\n" + strTime;
                     }
