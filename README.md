@@ -1,8 +1,12 @@
 # World Time clock for Elgato Stream Deck
 
 Displays the local time in cities around the world
+Supports both Windows and Mac
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
+
+### New in v1.4:
+- Support for both AM/PM and 24-hour clock
 
 ### Download
 
