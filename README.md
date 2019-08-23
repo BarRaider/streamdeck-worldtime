@@ -5,6 +5,9 @@ Supports both Windows and Mac
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
+### New in v1.4.2:
+- Choose a customized title to show instead of the City name
+
 ### New in v1.4:
 - Support for both AM/PM and 24-hour clock
 

@@ -24,6 +24,7 @@
             },
 
             onKeyDown: function (context, settings, coordinates, userDesiredState) {
+                copyTextToClipboard("HELLO WORLD!");
             },
 
             onKeyUp: function (context, settings, coordinates, userDesiredState) {
@@ -74,7 +75,17 @@
                         hours = hours ? hours : 12; // the hour '0' should be '12'
                         strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + ampm);
                     }
-                    if (showCityName) {
+
+                    let showTitle = false;
+                    if (payload.hasOwnProperty('title')) {
+                        if (payload['title']) {
+                            cityNameShort = payload['title'];
+                            showTitle = true;
+                        }
+                    }
+
+
+                    if (showCityName || showTitle) {
                         strTime = cityNameShort + "\r\n" + strTime;
                     }
                     this.SetTitle(context, strTime);
@@ -84,17 +95,6 @@
             onWillAppear: function (context, settings, coordinates) {
 
                 var self = this;
-                /*
-                var city = "";
-                if (settings != null && settings.hasOwnProperty('city')) {
-                    city = settings["city"];
-                    console.log("onWillAppear Received city: ", city);
-                }
-
-                if (settings != null && settings.hasOwnProperty('city')) {
-                    city = settings["city"];
-                    console.log("onWillAppear Received city: ", city);
-                }*/
                 console.log("onWillAppear settings: ", settings);
                 settingsCache[context] = settings;
                 self.onTickTimer = setInterval(function () { self.onTick(context); }, 1000);
@@ -244,8 +244,24 @@
             return offsetTime;
         }
 
-    </script>
+        function copyTextToClipboard(text) {
+            /* Get the text field */
+            var copyText = document.getElementById("clipboardDummy");
 
+            /* Set Text */
+            copyText.value = text;
+
+            /* Select the text field */
+            copyText.select();
+
+            /* Copy the text inside the text field */
+            document.execCommand("copy");
+        }
+
+
+/**/</script>
+
+    <input id="clipboardDummy" style="display:none;">
 </body>
 
 </html>
