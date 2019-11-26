@@ -7,12 +7,14 @@
 </head>
 
 <body>
+    <input id="clipboardDummy" style="display:none;">
     <script>
 
         var websocket = null;
         var pluginUUID = null;
         var settingsCache = {};
         var cityOffset = {};
+        var lastTime;
 
         var DestinationEnum = Object.freeze({ "HARDWARE_AND_SOFTWARE": 0, "HARDWARE_ONLY": 1, "SOFTWARE_ONLY": 2 })
 
@@ -24,7 +26,14 @@
             },
 
             onKeyDown: function (context, settings, coordinates, userDesiredState) {
-                copyTextToClipboard("HELLO WORLD!");
+                try {
+
+                    copyTextToClipboard(lastTime);
+                }
+                catch (err) {
+                    console.log("onKeyDown ERROR: ", err);
+                }
+                
             },
 
             onKeyUp: function (context, settings, coordinates, userDesiredState) {
@@ -64,6 +73,16 @@
                         show24Hours = payload['show24hours']
                     }
 
+                    let showDateDDMM = false;
+                    if (payload.hasOwnProperty('showDateDDMM')) {
+                        showDateDDMM = payload['showDateDDMM']
+                    }
+
+                    let showDateMMDD = false;
+                    if (payload.hasOwnProperty('showDateMMDD')) {
+                        showDateMMDD = payload['showDateMMDD']
+                    }
+
                     let strTime = "";
                     if (show24Hours) {
                         strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2));
@@ -74,6 +93,21 @@
                         hours = hours % 12;
                         hours = hours ? hours : 12; // the hour '0' should be '12'
                         strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + ampm);
+                    }
+                    lastTime = strTime; // Used for Copy to clipboard
+
+                    if (showDateDDMM || showDateMMDD) {
+                        let day = offsetTime.getDate();
+                        let monthIndex = offsetTime.getMonth() + 1;
+                        let result;
+                        if (showDateDDMM) {
+                            result = day + "/" + monthIndex;
+                        }
+                        else {
+                            result = monthIndex + "/" + day;
+                        }
+                        lastTime = strTime + ' ' + result; // Used for Copy to clipboard
+                        strTime = strTime + '\n' + result;                        
                     }
 
                     let showTitle = false;
@@ -245,8 +279,10 @@
         }
 
         function copyTextToClipboard(text) {
+            console.log("Got text: ", text);
             /* Get the text field */
             var copyText = document.getElementById("clipboardDummy");
+            copyText.style.display = "";
 
             /* Set Text */
             copyText.value = text;
@@ -256,12 +292,12 @@
 
             /* Copy the text inside the text field */
             document.execCommand("copy");
+            copyText.style.display = "none";
+            console.log("Text is: ", copyText.value);
         }
 
 
-/**/</script>
-
-    <input id="clipboardDummy" style="display:none;">
+        /**/</script>
 </body>
 
 </html>

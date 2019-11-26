@@ -17,7 +17,7 @@
   ],
   "SDKVersion": 2,
   "Author": "BarRaider",
-  "Description": "Displays the local time in cities around the world",
+  "Description": "Displays the local date and time in cities around the world",
   "Name": "World Time",
   "Icon": "pluginIcon",
   "URL": "https://barraider.github.io/",
@@ -25,7 +25,7 @@
   "PropertyInspectorPath": "worldtime_pi.html",
   "Category": "BarRaider",
   "CategoryIcon": "categoryIcon",
-  "Version": "1.4.2",
+  "Version": "1.5",
   "OS": [
     {
       "Platform": "mac",
