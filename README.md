@@ -5,10 +5,11 @@ Supports both Windows and Mac
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
-### New in v1.4.2:
+## Features
+- Date support - shows the current date in the chosen city/timezone
+- Pressing the key will copy the current date and time in the chosen city/timezone to the clipboard
+- Ability to choose between dd/mm and mm/dd date formats
 - Choose a customized title to show instead of the City name
-
-### New in v1.4:
 - Support for both AM/PM and 24-hour clock
 
 ### Download
