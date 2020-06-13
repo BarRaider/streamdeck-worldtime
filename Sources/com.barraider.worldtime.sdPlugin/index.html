@@ -172,7 +172,7 @@
                     .then((out) => {
                         console.log('Received JSON ', out);
                         let offset = out["utc_offset"];
-                        let num = Number(offset.slice(0, 3));
+                        let num = Number(offset.slice(0, 3)) + Number(offset.slice(4,6)) / 60;
                         cityOffset[cityName] = num;
                     })
                     .catch(err => { throw err });
