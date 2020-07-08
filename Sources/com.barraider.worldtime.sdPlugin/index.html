@@ -10,11 +10,15 @@
     <input id="clipboardDummy" style="display:none;">
     <script>
 
-        var websocket = null;
+        var COOLDOWN_TIME_MS = 120000;
+		var websocket = null;
         var pluginUUID = null;
         var settingsCache = {};
         var cityOffset = {};
         var lastTime;
+		var lastFetchFailedTime;
+		var fetchFailed = false;
+		
 
         var DestinationEnum = Object.freeze({ "HARDWARE_AND_SOFTWARE": 0, "HARDWARE_ONLY": 1, "SOFTWARE_ONLY": 2 })
 
@@ -40,19 +44,32 @@
             },
 
             onTick: function (context) {
-                var payload = settingsCache[context];
+				var payload = settingsCache[context];
                 if (payload != null && payload.hasOwnProperty('city')) {
                     var cityName = payload['city'];
 
                     if (!cityOffset.hasOwnProperty(cityName)) {
                         console.log("No data for " + cityName, cityOffset);
-                        this.GetCityOffset(cityName);
+						if (!!lastFetchFailedTime) {
+							let cooldownTime = (new Date().getTime() - lastFetchFailedTime.getTime());
+							if (cooldownTime < COOLDOWN_TIME_MS) {
+								console.log('In cooldown', cooldownTime);
+								this.SetTitle(context, 'Server\nError');
+								return;
+							}
+						}
+						this.GetCityOffset(cityName);
                     }
-                    var offset = cityOffset[cityName];
-                    if (offset === undefined) {
+					
+					if (fetchFailed) {
+						this.SetTitle(context, 'Server\nError');
+						return;
+					}
+					
+                    var offsetMinutes = cityOffset[cityName];
+                    if (offsetMinutes === undefined) {
                         return;
                     }
-
                     let cityNameShort = "";
                     let showCityName = false;
                     if (payload.hasOwnProperty('showCityName') && payload['showCityName']) {
@@ -66,11 +83,21 @@
                             cityNameShort = cityNameShort + "\r\n";
                         }
                     }
-                    var offsetTime = getDateFromOffset(offset);
+                    var offsetTime = getDateFromOffset(offsetMinutes);
 
                     let show24Hours = false;
                     if (payload.hasOwnProperty('show24hours')) {
                         show24Hours = payload['show24hours']
+                    }
+
+                    let showAMPM = false;
+                    if (payload.hasOwnProperty('showAMPM')) {
+                        showAMPM = payload['showAMPM']
+                    }
+                    
+                    let hideClock = false;
+                    if (payload.hasOwnProperty('hideClock')) {
+                        hideClock = payload['hideClock']
                     }
 
                     let showDateDDMM = false;
@@ -83,13 +110,17 @@
                         showDateMMDD = payload['showDateMMDD']
                     }
 
-                    let strTime = "";
+                    let strTime = '';
                     if (show24Hours) {
                         strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2));
                     }
-                    else { // Use AM/PM mode
+                    else if (!hideClock) { // Use AM/PM mode
                         let hours = offsetTime.getHours();
-                        let ampm = hours >= 12 ? 'pm' : 'am';
+                        let ampm = '';
+
+                        if (showAMPM) {
+                            ampm = hours >= 12 ? 'pm' : 'am';
+                        }
                         hours = hours % 12;
                         hours = hours ? hours : 12; // the hour '0' should be '12'
                         strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + ampm);
@@ -106,8 +137,16 @@
                         else {
                             result = monthIndex + "/" + day;
                         }
-                        lastTime = strTime + ' ' + result; // Used for Copy to clipboard
-                        strTime = strTime + '\n' + result;                        
+
+                        // Check if we already have the time in strTime
+                        if (strTime === '') {
+                            lastTime = result; // Used for Copy to clipboard
+                            strTime = result;                        
+                        }
+                        else { // Not empty
+                            lastTime = strTime + ' ' + result; // Used for Copy to clipboard
+                            strTime = strTime + '\n' + result;                        
+                        }                        
                     }
 
                     let showTitle = false;
@@ -117,7 +156,6 @@
                             showTitle = true;
                         }
                     }
-
 
                     if (showCityName || showTitle) {
                         strTime = cityNameShort + "\r\n" + strTime;
@@ -169,13 +207,26 @@
 
                 fetch(url)
                     .then(res => res.json())
+					.catch(err => { 
+						console.log('Invalid API Response Error');
+						fetchFailed = true;
+						lastFetchFailedTime = new Date();
+					})
                     .then((out) => {
                         console.log('Received JSON ', out);
                         let offset = out["utc_offset"];
-                        let num = Number(offset.slice(0, 3));
-                        cityOffset[cityName] = num;
+                        let hours = Number(offset.slice(0, 3));
+						let minutes = Number(offset.slice(-2));
+						let offsetMinutes = (hours * 60) + minutes; // Offset is now in minutes
+                        cityOffset[cityName] = offsetMinutes;
+						console.log('Offset for' + cityName, offset, '-', offsetMinutes);
+						fetchFailed = false;
                     })
-                    .catch(err => { throw err });
+                    .catch(err => { 
+						console.log('Invalid JSON Parsing Error');
+						fetchFailed = true;
+						lastFetchFailedTime = new Date();
+					});
 
             }
         };
@@ -271,10 +322,11 @@
             image.src = url;
         };
 
-        function getDateFromOffset(offset) {
+        function getDateFromOffset(offsetMinutes) {
             var d = new Date();
             var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-            var offsetTime = new Date(utc + (3600000 * offset));
+            //var offsetTime = new Date(utc + (3600000 * offset));
+			var offsetTime = new Date(utc + (60000 * offsetMinutes));
             return offsetTime;
         }
 

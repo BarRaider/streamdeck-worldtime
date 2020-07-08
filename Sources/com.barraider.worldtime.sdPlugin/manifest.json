@@ -20,12 +20,12 @@
   "Description": "Displays the local date and time in cities around the world",
   "Name": "World Time",
   "Icon": "pluginIcon",
-  "URL": "https://barraider.github.io/",
+  "URL": "https://barraider.com/",
   "CodePath": "index.html",
   "PropertyInspectorPath": "worldtime_pi.html",
   "Category": "BarRaider",
   "CategoryIcon": "categoryIcon",
-  "Version": "1.5",
+  "Version": "1.6",
   "OS": [
     {
       "Platform": "mac",
@@ -37,6 +37,6 @@
     }
   ],
   "Software": {
-    "MinimumVersion": "4.2"
+    "MinimumVersion": "4.7"
   }
 }

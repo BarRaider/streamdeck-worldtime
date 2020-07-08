@@ -1,11 +1,10 @@
 ﻿<!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8" />
     <title>BarRaider's World Time PI Settings</title>
-    <link rel="stylesheet" href="sdpi.css">
-    <script src="common.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
 </head>
 
 <body>
@@ -417,179 +416,46 @@
             <div class="sdpi-item-label">Custom Title</div>
             <input class="sdpi-item-value sdProperty" placeholder="My City" value="" id="title" oninput="setSettings()">
         </div>
-        <div type="checkbox" class="sdpi-item" id="dvShow24Hour">
-            <div class="sdpi-item-label">24 hours mode</div>
-            <div class="sdpi-item-value">
-                <input id="show24hours" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
-                <label for="show24hours" class="sdpi-item-label"><span></span>Disable to show as AM/PM</label>
+        <div type="radio" class="sdpi-item" id="dvHourMode">
+            <div class="sdpi-item-label">Clock Display</div>
+            <div class="sdpi-item-value ">
+                <div class="sdpi-item-child">
+                    <input id="show24hours" class="sdProperty sdCheckbox" type="radio" name="hourMode" checked oninput="setSettings()">
+                    <label for="show24hours" class="sdpi-item-label"><span></span>24 Hours</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="showAMPM" class="sdProperty sdCheckbox" type="radio" name="hourMode" checked oninput="setSettings()">
+                    <label for="showAMPM" class="sdpi-item-label"><span></span>Show AM/PM</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="hideAMPM" class="sdProperty sdCheckbox" type="radio" name="hourMode" oninput="setSettings()">
+                    <label for="hideAMPM" class="sdpi-item-label"><span></span>Hide AM/PM</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="hideClock" class="sdProperty sdCheckbox" type="radio" name="hourMode" oninput="setSettings()">
+                    <label for="hideClock" class="sdpi-item-label"><span></span>Hide Clock</label>
+                </div>
             </div>
         </div>
-        <div type="checkbox" class="sdpi-item" id="dvShowDateDDMM">
-            <div class="sdpi-item-label">Date dd/mm</div>
-            <div class="sdpi-item-value">
-                <input id="showDateDDMM" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
-                <label for="showDateDDMM" class="sdpi-item-label"><span></span>Show date as dd/mm on key</label>
-            </div>
+        <div class="sdpi-item">
         </div>
-        <div type="checkbox" class="sdpi-item" id="dvShowDateMMDD">
-            <div class="sdpi-item-label">Date mm/dd</div>
-            <div class="sdpi-item-value">
-                <input id="showDateMMDD" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
-                <label for="showDateMMDD" class="sdpi-item-label"><span></span>Show date as mm/dd on key</label>
+        <div type="radio" class="sdpi-item" id="dvDateMode">
+            <div class="sdpi-item-label">Date Display</div>
+            <div class="sdpi-item-value ">
+                <div class="sdpi-item-child">
+                    <input id="showDateDDMM" class="sdProperty sdCheckbox" type="radio" name="dateMode" checked oninput="setSettings()">
+                    <label for="showDateDDMM" class="sdpi-item-label"><span></span>Show as dd/mm</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="showDateMMDD" class="sdProperty sdCheckbox" type="radio" name="dateMode" checked oninput="setSettings()">
+                    <label for="showDateMMDD" class="sdpi-item-label"><span></span>Show as mm/dd</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="hideDate" class="sdProperty sdCheckbox" type="radio" name="dateMode" oninput="setSettings()">
+                    <label for="hideDate" class="sdpi-item-label"><span></span>Hide Date</label>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        var pluginAction = null,
-            uuid = '';
-
-        if ($SD) {
-            $SD.on('connected', function (jsonObj) {
-                console.log("connected");
-                uuid = jsonObj['uuid'];
-                if (jsonObj.hasOwnProperty('actionInfo')) {
-                    pluginAction = jsonObj.actionInfo['action'];
-                    loadConfiguration(jsonObj.actionInfo.payload.settings);
-                }
-            });
-            $SD.on('message', function (evt) {
-                console.log("message");
-                var jsonObj = JSON.parse(evt.data);
-
-                if (jsonObj.event === 'sendToPropertyInspector') {
-                    var payload = jsonObj.payload;
-                    loadConfiguration(payload);
-                }
-                else if (jsonObj.event === 'didReceiveSettings') {
-                    var payload = jsonObj.payload;
-                    loadConfiguration(payload.settings);
-                }
-            });
-        };
-
-        function loadConfiguration(payload) {
-            console.log('loadConfiguration');
-            console.log(payload);
-            for (var key in payload) {
-                try {
-                    var elem = document.getElementById(key);
-                    if (elem.classList.contains("sdCheckbox")) { // Checkbox
-                        elem.checked = payload[key];
-                    }
-                    else if (elem.classList.contains("sdFile")) { // File
-                        var elemFile = document.getElementById(elem.id + "Filename");
-                        elemFile.innerText = payload[key];
-                        if (!elemFile.innerText) {
-                            elemFile.innerText = "No file...";
-                        }
-                    }
-                    else if (elem.classList.contains("sdList")) { // Dynamic dropdown
-                        var textProperty = elem.getAttribute("sdListTextProperty");
-                        var valueProperty = elem.getAttribute("sdListValueProperty");
-                        var valueField = elem.getAttribute("sdValueField");
-
-                        var items = payload[key];
-                        elem.options.length = 0;
-
-                        for (var idx = 0; idx < items.length; idx++) {
-                            var opt = document.createElement('option');
-                            opt.value = items[idx][valueProperty];
-                            opt.text = items[idx][textProperty];
-                            elem.appendChild(opt);
-                        }
-                        elem.value = payload[valueField];
-                    }
-                    else { // Normal value
-                        elem.value = payload[key];
-                    }
-                    console.log("Load: " + key + "=" + payload[key]);
-                }
-                catch (err) {
-                    console.log("loadConfiguration failed for key: " + key + " - " + err);
-                }
-            }
-        }
-
-
-
-
-        /** you can also use ES6 syntax like so:
-        *
-        *   if ($SD) $SD.on('connected', (jsonObj) => { uuid=jsonObj.uuid }));
-        *
-        */
-
-        function sendValueToPlugin(value, param) {
-
-            // console.log("SENDING VALUE TO PLUGIN: ", value, uuid, pluginAction);
-            if ($SD && $SD.connection) {
-                var payload = {};
-                if (param) {
-                    payload[param] = value;
-                }
-                $SD.api.sendToPlugin(uuid, pluginAction, payload);
-            }
-        }
-
-        function setSettings() {
-            var payload = {};
-            var elements = document.getElementsByClassName("sdProperty");
-
-            Array.prototype.forEach.call(elements, function (elem) {
-                var key = elem.id;
-                if (elem.classList.contains("sdCheckbox")) { // Checkbox
-                    payload[key] = elem.checked;
-                }
-                else if (elem.classList.contains("sdFile")) { // File
-                    var elemFile = document.getElementById(elem.id + "Filename");
-                    payload[key] = elem.value;
-                    if (!elem.value) {
-                        // Fetch innerText if file is empty (happens when we lose and regain focus to this key)
-                        payload[key] = elemFile.innerText;
-                    }
-                    else {
-                        // Set value on initial file selection
-                        elemFile.innerText = elem.value;
-                    }
-                }
-                else if (elem.classList.contains("sdList")) { // Dynamic dropdown
-                    var valueField = elem.getAttribute("sdValueField");
-                    payload[valueField] = elem.value;
-                }
-                else { // Normal value
-                    payload[key] = elem.value;
-                }
-                console.log("Save: " + key + "<=" + payload[key]);
-            });
-            setSettingsToPlugin(payload);
-        }
-
-        function setSettingsToPlugin(payload) {
-            if ($SD && $SD.connection && ($SD.connection.readyState === 1)) {
-                const json = {
-                    'event': 'setSettings',
-                    'context': uuid,
-                    'payload': payload
-                };
-                $SD.connection.send(JSON.stringify(json));
-                var event = new Event('settingsUpdated');
-                document.dispatchEvent(event);
-            }
-        }
-
-        function openWebsite() {
-            if ($SD && $SD.connection && ($SD.connection.readyState === 1)) {
-                const json = {
-                    'event': 'openUrl',
-                    'payload': {
-                        'url': 'https://BarRaider.com'
-                    }
-                };
-                $SD.connection.send(JSON.stringify(json));
-            }
-        }
-
-    </script>
 </body>
 </html>
