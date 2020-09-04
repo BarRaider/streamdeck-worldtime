@@ -11,14 +11,14 @@
     <script>
 
         var COOLDOWN_TIME_MS = 120000;
-		var websocket = null;
+        var websocket = null;
         var pluginUUID = null;
         var settingsCache = {};
+        var onTickCache = {};
+        var lastTimeCache = {};
         var cityOffset = {};
-        var lastTime;
-		var lastFetchFailedTime;
-		var fetchFailed = false;
-		
+        var lastFetchFailedTime;
+        var fetchFailed = false;
 
         var DestinationEnum = Object.freeze({ "HARDWARE_AND_SOFTWARE": 0, "HARDWARE_ONLY": 1, "SOFTWARE_ONLY": 2 })
 
@@ -26,13 +26,15 @@
 
             type: "com.barraider.worldtime",
             constructior: function () {
-                this.onTickTimer = null;
             },
 
             onKeyDown: function (context, settings, coordinates, userDesiredState) {
                 try {
-
-                    copyTextToClipboard(lastTime);
+                    let lastTime = lastTimeCache[context];
+                    
+                    if (lastTime != null) {
+                        copyTextToClipboard(lastTime);
+                    }
                 }
                 catch (err) {
                     console.log("onKeyDown ERROR: ", err);
@@ -44,28 +46,28 @@
             },
 
             onTick: function (context) {
-				var payload = settingsCache[context];
+                var payload = settingsCache[context];
                 if (payload != null && payload.hasOwnProperty('city')) {
                     var cityName = payload['city'];
 
                     if (!cityOffset.hasOwnProperty(cityName)) {
                         console.log("No data for " + cityName, cityOffset);
-						if (!!lastFetchFailedTime) {
-							let cooldownTime = (new Date().getTime() - lastFetchFailedTime.getTime());
-							if (cooldownTime < COOLDOWN_TIME_MS) {
-								console.log('In cooldown', cooldownTime);
-								this.SetTitle(context, 'Server\nError');
-								return;
-							}
-						}
-						this.GetCityOffset(cityName);
+                        if (!!lastFetchFailedTime) {
+                            let cooldownTime = (new Date().getTime() - lastFetchFailedTime.getTime());
+                            if (cooldownTime < COOLDOWN_TIME_MS) {
+                                console.log('In cooldown', cooldownTime);
+                                this.SetTitle(context, 'Server\nError');
+                                return;
+                            }
+                        }
+                        this.GetCityOffset(cityName);
                     }
-					
-					if (fetchFailed) {
-						this.SetTitle(context, 'Server\nError');
-						return;
-					}
-					
+                    
+                    if (fetchFailed) {
+                        this.SetTitle(context, 'Server\nError');
+                        return;
+                    }
+                    
                     var offsetMinutes = cityOffset[cityName];
                     if (offsetMinutes === undefined) {
                         return;
@@ -125,7 +127,7 @@
                         hours = hours ? hours : 12; // the hour '0' should be '12'
                         strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + ampm);
                     }
-                    lastTime = strTime; // Used for Copy to clipboard
+                    lastTimeCache[context] = strTime; // Used for Copy to clipboard
 
                     if (showDateDDMM || showDateMMDD) {
                         let day = offsetTime.getDate();
@@ -140,11 +142,11 @@
 
                         // Check if we already have the time in strTime
                         if (strTime === '') {
-                            lastTime = result; // Used for Copy to clipboard
+                            lastTimeCache[context] = result; // Used for Copy to clipboard
                             strTime = result;                        
                         }
                         else { // Not empty
-                            lastTime = strTime + ' ' + result; // Used for Copy to clipboard
+                            lastTimeCache[context] = strTime + ' ' + result; // Used for Copy to clipboard
                             strTime = strTime + '\n' + result;                        
                         }                        
                     }
@@ -167,9 +169,25 @@
             onWillAppear: function (context, settings, coordinates) {
 
                 var self = this;
-                console.log("onWillAppear settings: ", settings);
+                console.log("onWillAppear context: ", context, " settings: ", settings);
                 settingsCache[context] = settings;
-                self.onTickTimer = setInterval(function () { self.onTick(context); }, 1000);
+                
+                let timer = onTickCache[context];
+                if (timer != null) {
+                    clearInterval(timer);
+                }
+                
+                onTickCache[context] = setInterval(function () { self.onTick(context); }, 1000);
+            },
+            onWillDisappear: function (context, settings, coordinates) {
+
+                var self = this;
+                console.log("onWillDisappear context: ", context, " settings: ", settings);
+                
+                let timer = onTickCache[context];
+                if (timer != null) {
+                    clearInterval(timer);
+                }
             },
 
             SetTitle: function (context, titleText) {
@@ -207,26 +225,26 @@
 
                 fetch(url)
                     .then(res => res.json())
-					.catch(err => { 
-						console.log('Invalid API Response Error');
-						fetchFailed = true;
-						lastFetchFailedTime = new Date();
-					})
+                    .catch(err => { 
+                        console.log('Invalid API Response Error');
+                        fetchFailed = true;
+                        lastFetchFailedTime = new Date();
+                    })
                     .then((out) => {
                         console.log('Received JSON ', out);
                         let offset = out["utc_offset"];
                         let hours = Number(offset.slice(0, 3));
-						let minutes = Number(offset.slice(-2));
-						let offsetMinutes = (hours * 60) + minutes; // Offset is now in minutes
+                        let minutes = Number(offset.slice(-2));
+                        let offsetMinutes = (hours * 60) + minutes; // Offset is now in minutes
                         cityOffset[cityName] = offsetMinutes;
-						console.log('Offset for' + cityName, offset, '-', offsetMinutes);
-						fetchFailed = false;
+                        console.log('Offset for' + cityName, offset, '-', offsetMinutes);
+                        fetchFailed = false;
                     })
                     .catch(err => { 
-						console.log('Invalid JSON Parsing Error');
-						fetchFailed = true;
-						lastFetchFailedTime = new Date();
-					});
+                        console.log('Invalid JSON Parsing Error');
+                        fetchFailed = true;
+                        lastFetchFailedTime = new Date();
+                    });
 
             }
         };
@@ -278,18 +296,16 @@
                     var coordinates = jsonPayload['coordinates'];
                     worldTimeAction.onWillAppear(context, settings, coordinates);
                 }
+                else if (event == "willDisappear") {
+                    var settings = jsonPayload['settings'];
+                    var coordinates = jsonPayload['coordinates'];
+                    worldTimeAction.onWillDisappear(context, settings, coordinates);
+                }
                 else if (event == "sendToPlugin") {
                     console.log("sendToPlugin received payload: ", jsonPayload);
                     if (jsonPayload != null && jsonPayload.hasOwnProperty('city')) {
                         worldTimeAction.SetSettings(context, jsonPayload);
                     }
-                    /*
-                                        if (jsonPayload.hasOwnProperty('city')) {
-
-                                            var cityName = jsonPayload['city'];
-                                            worldTimeAction.SetSettings(context, { "city": cityName });
-                                        }
-                    */
                 }
                 else if (event == "didReceiveSettings") {
                     console.log("didReceiveSettings received payload: ", jsonPayload);
@@ -326,7 +342,7 @@
             var d = new Date();
             var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
             //var offsetTime = new Date(utc + (3600000 * offset));
-			var offsetTime = new Date(utc + (60000 * offsetMinutes));
+            var offsetTime = new Date(utc + (60000 * offsetMinutes));
             return offsetTime;
         }
 
