@@ -17,7 +17,7 @@
   ],
   "SDKVersion": 2,
   "Author": "BarRaider",
-  "Description": "Displays the local date and time in cities around the world",
+  "Description": "Displays the local date and time in cities around the world.\nPRO-TIP: CHOOSE YOUR OWN TIMEZONE AND YOU HAVE A DIGITAL CLOCK!",
   "Name": "World Time",
   "Icon": "pluginIcon",
   "URL": "https://barraider.com/",
@@ -25,7 +25,7 @@
   "PropertyInspectorPath": "worldtime_pi.html",
   "Category": "BarRaider",
   "CategoryIcon": "categoryIcon",
-  "Version": "1.7",
+  "Version": "1.8",
   "OS": [
     {
       "Platform": "mac",
@@ -37,6 +37,6 @@
     }
   ],
   "Software": {
-    "MinimumVersion": "4.8"
+    "MinimumVersion": "4.9"
   }
 }

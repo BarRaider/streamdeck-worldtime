@@ -5,6 +5,13 @@ Supports both Windows and Mac
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v1.8
+- Built-In time zone calculation. Removes the need for an external API. "`Server Error`" issues should now be resolved.
+
+## New in v1.7
+- Improved CPU usage
+- Fixed issue where time was not copied correctly to clipboard when pressing the button
+
 ## New in v1.6
 - Added support for time zones that are not whole hours (Such as: `Australia/Adelaide`)
 - Clock can now be customizable to 4 different modes (24hr/AMPM/Hide AMPM/Hide Clock)
