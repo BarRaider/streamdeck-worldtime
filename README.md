@@ -5,6 +5,9 @@ Supports both Windows and Mac
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v1.9
+- Added an option to show the time with seconds
+
 ## New in v1.8
 - Built-In time zone calculation. Removes the need for an external API. "`Server Error`" issues should now be resolved.
 
