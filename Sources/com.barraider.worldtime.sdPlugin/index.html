@@ -116,9 +116,19 @@
                         showDateMMDD = payload['showDateMMDD']
                     }
 
+                    let showSeconds = false;
+                    if (payload.hasOwnProperty('showSeconds')) {
+                        showSeconds = payload['showSeconds'];
+                    }
+
+                    let strSeconds = '';
+                    if (showSeconds) {
+                        strSeconds = (":" + ("0" + offsetTime.getSeconds()).slice(-2));
+                    }
+
                     let strTime = '';
                     if (show24Hours) {
-                        strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2));
+                        strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + strSeconds);
                     }
                     else if (!hideClock) { // Use AM/PM mode
                         let hours = offsetTime.getHours();
@@ -129,7 +139,7 @@
                         }
                         hours = hours % 12;
                         hours = hours ? hours : 12; // the hour '0' should be '12'
-                        strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + ampm);
+                        strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + strSeconds + ampm);
                     }
                     lastTimeCache[context] = strTime; // Used for Copy to clipboard
 
