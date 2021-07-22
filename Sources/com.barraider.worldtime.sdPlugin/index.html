@@ -83,10 +83,10 @@
                         var idx = cityName.indexOf("/") + 1;
                         cityNameShort = cityName.substring(idx).replace("_", " ");
                         if (cityNameShort.length > 6) {
-                            cityNameShort = cityNameShort.slice(0, 5) + "-\r\n" + cityNameShort.substring(5);
+                            cityNameShort = cityNameShort.slice(0, 5) + "-\n" + cityNameShort.substring(5);
                         }
                         else {
-                            cityNameShort = cityNameShort + "\r\n";
+                            cityNameShort = cityNameShort + "\n";
                         }
                     }
                     var offsetTime = getDateFromOffset(offsetMinutes);
@@ -174,7 +174,7 @@
                     }
 
                     if (showCityName || showTitle) {
-                        strTime = cityNameShort + "\r\n" + strTime;
+                        strTime = cityNameShort + "\n" + strTime;
                     }
                     this.SetTitle(context, strTime);
                 }
