@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    
+
     <input id="clipboardDummy" style="display:none;">
     <script>
 
@@ -116,30 +116,55 @@
                         showDateMMDD = payload['showDateMMDD']
                     }
 
+                    let showHours = false;
+                    let showMinutes = false;
                     let showSeconds = false;
-                    if (payload.hasOwnProperty('showSeconds')) {
-                        showSeconds = payload['showSeconds'];
+                    if (payload.hasOwnProperty('timeFormat')) {
+                        let clockFormat = payload['timeFormat'];
+                        showHours = clockFormat.includes("hh");
+                        showMinutes = clockFormat.includes("mm");
+                        showSeconds = clockFormat.includes("ss");
+
                     }
 
                     let strSeconds = '';
                     if (showSeconds) {
-                        strSeconds = (":" + ("0" + offsetTime.getSeconds()).slice(-2));
+                        strSeconds = ("0" + offsetTime.getSeconds()).slice(-2);
                     }
 
                     let strTime = '';
-                    if (show24Hours) {
-                        strTime = (("0" + offsetTime.getHours()).slice(-2) + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + strSeconds);
-                    }
-                    else if (!hideClock) { // Use AM/PM mode
-                        let hours = offsetTime.getHours();
-                        let ampm = '';
+                    let ampm = '';
+                    if (!hideClock) {
+                        if (showHours) {
+                            if (show24Hours) {
+                                strTime = ("0" + offsetTime.getHours()).slice(-2);
+                            }
+                            else { // Use AM/PM mode
+                                let hours = offsetTime.getHours();
 
-                        if (showAMPM) {
-                            ampm = hours >= 12 ? 'pm' : 'am';
+                                if (showAMPM) {
+                                    ampm = hours >= 12 ? 'pm' : 'am';
+                                }
+                                hours = hours % 12;
+                                hours = hours ? hours : 12; // the hour '0' should be '12'
+                                strTime += hours;
+                            }
+
+                            if (showMinutes) {
+                                strTime += ":";
+                            }
+
                         }
-                        hours = hours % 12;
-                        hours = hours ? hours : 12; // the hour '0' should be '12'
-                        strTime = (hours + ":" + ("0" + offsetTime.getMinutes()).slice(-2) + strSeconds + ampm);
+                        if (showMinutes) {
+                            strTime += ("0" + offsetTime.getMinutes()).slice(-2);
+                            if (showSeconds) {
+                                strTime += ":";
+                            }
+                        }
+                        if (showSeconds) {
+                            strTime += strSeconds;
+                        }
+                        strTime += ampm;
                     }
                     lastTimeCache[context] = strTime; // Used for Copy to clipboard
 
@@ -184,6 +209,21 @@
 
                 var self = this;
                 console.log("onWillAppear context: ", context, " settings: ", settings);
+
+                // Backwards compatibility v1.9 -> v2.0
+                if (settings["showSeconds"]) {
+                    console.log("backwards compatibility, showing seconds");
+                    settings["showSeconds"] = false;
+                    settings["timeFormat"] = "hh:mm:ss";
+                    this.SetSettings(context, settings);
+                }
+                else if (typeof settings["timeFormat"] == 'undefined') {
+                    console.log("backwards compatibility, setting default format");
+                    settings["timeFormat"] = "hh:mm";
+                    this.SetSettings(context, settings);
+                }
+
+
                 settingsCache[context] = settings;
 
                 let timer = onTickCache[context];
@@ -217,6 +257,21 @@
                 websocket.send(JSON.stringify(json));
             },
 
+            SetImage: function (context, base64Image) {
+                var json = {
+                    "event": "setImage",
+                    "context": context,
+                    "payload": {
+                        "image": base64Image,
+                        "target": DestinationEnum.HARDWARE_AND_SOFTWARE,
+                        "state": 0
+                    }
+                };
+
+                websocket.send(JSON.stringify(json));
+            },
+
+
             SetSettings: function (context, settings) {
                 var json = {
                     "event": "setSettings",
@@ -228,6 +283,16 @@
                 settingsCache[context] = settings;
                 console.log("New Settings", settings);
                 console.log("New JSON", JSON.stringify(json));
+
+                if (settings.hasOwnProperty("hideBackground")) {
+                    if (settings["hideBackground"]) {
+                        this.SetImage(context, getEmptyImage());
+                    }
+                    else {
+                        this.SetImage(context, null);
+                    }
+
+                }
             },
 
             AddToSettings: function (context, newSettings) {
@@ -245,34 +310,6 @@
                 catch (err) {
                     console.log('GetCityOffset failed for: ', cityName, err);
                 }
-
-                // No longer using worldtimeapi.org, following part will be removed in next version
-                /*
-                let url = 'http://worldtimeapi.org/api/timezone/' + cityName;
-
-                fetch(url)
-                    .then(res => res.json())
-                    .catch(err => {
-                        console.log('Invalid API Response Error');
-                        fetchFailed = true;
-                        lastFetchFailedTime = new Date();
-                    })
-                    .then((out) => {
-                        console.log('Received JSON ', out);
-                        let offset = out["utc_offset"];
-                        let hours = Number(offset.slice(0, 3));
-                        let minutes = Number(offset.slice(-2));
-                        let offsetMinutes = (hours * 60) + minutes; // Offset is now in minutes
-                        cityOffset[cityName] = offsetMinutes;
-                        console.log('Offset for' + cityName, offset, '->', offsetMinutes);
-                        fetchFailed = false;
-                    })
-                    .catch(err => {
-                        console.log('Invalid JSON Parsing Error');
-                        fetchFailed = true;
-                        lastFetchFailedTime = new Date();
-                    });
-                */
             },
             TestAllZones: function () {
                 const zones = [
@@ -759,6 +796,18 @@
 
             image.src = url;
         };
+
+        function getEmptyImage() {
+            let canvas = document.createElement("canvas");
+
+            canvas.width = 144;
+            canvas.height = 144;
+
+            let ctx = canvas.getContext("2d");
+            ctx.fillStyle = "black";
+            ctx.fill();
+            return canvas.toDataURL();
+        }
 
         function getDateFromOffset(offsetMinutes) {
             var d = new Date();

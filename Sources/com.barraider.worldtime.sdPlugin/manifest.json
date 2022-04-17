@@ -25,7 +25,7 @@
   "PropertyInspectorPath": "worldtime_pi.html",
   "Category": "BarRaider",
   "CategoryIcon": "categoryIcon",
-  "Version": "1.9",
+  "Version": "1.9.1",
   "OS": [
     {
       "Platform": "mac",
