@@ -6,6 +6,7 @@
     <title>BarRaider's World Time PI Settings</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
     <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
+    <script src="worldtime_pi.js"></script>
 </head>
 
 <body>
@@ -14,6 +15,12 @@
             <summary>For feedback/suggestions contact me at <span class="linkspan"
                     onclick="openWebsite()">https://BarRaider.com</span> </summary>
         </details>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>Pro-Tip: Long-Press to copy current date/time to clipboard</summary>
+            </details>
+        </div>
+        <div class="sdpi-heading">Clock</div>
         <div type="select" class="sdpi-item">
             <div class="sdpi-item-label">Choose City</div>
             <select class="sdpi-item-value select setvalueSelect sdProperty" id="city" onchange="setSettings()">
@@ -454,6 +461,7 @@
                 <option value="ss">ss</option>
             </select>
         </div>
+        <div class="sdpi-heading">Date</div>
         <div type="radio" class="sdpi-item" id="dvDateMode">
             <div class="sdpi-item-label">Date Display</div>
             <div class="sdpi-item-value ">
@@ -474,13 +482,38 @@
                 </div>
             </div>
         </div>
+        <div class="sdpi-heading">Sunrise/Sunset</div>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>For instructions how to show sunrise/sunset <span class="linkspan"> CLICK HERE</span></summary>
+                <p>You can find the latitude and longitude for your city by going to <span class="linkspan"
+                        onclick="openLatLong()">https://latlong.net</span></p>
+                <p>After setting it up, pressing the button will toggle between the current time and the sunrise/sunset
+                    time</p>
+            </details>
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Latitude</div>
+            <input class="sdpi-item-value sdProperty" placeholder="31.768318" inputmode="numeric"
+                pattern="(-?\d+(\.\d+)?)" type="number" value="" id="sunLat" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Longitude</div>
+            <input class="sdpi-item-value sdProperty" placeholder="35.213711" inputmode="numeric"
+                pattern="(-?\d+(\.\d+)?)" type="number" value="" id="sunLon" oninput="setSettings()">
+        </div>
+
+        <div class="sdpi-heading">General</div>
         <div type="checkbox" class="sdpi-item" id="dvHideGlobe">
-            <div class="sdpi-item-label">Hide Globe</div>
+            <div class="sdpi-item-label">Background</div>
             <div class="sdpi-item-value">
                 <input id="hideBackground" class="sdProperty sdCheckbox" type="checkbox" value=""
                     oninput="setSettings()">
-                <label for="hideBackground" class="sdpi-item-label"><span></span>Hide globe in background</label>
+                <label for="hideBackground" class="sdpi-item-label"><span></span>Hide globe/sun background</label>
             </div>
+        </div>
+        <div class="sdpi-item" id="dvHdn">
+            <input value="" type="hidden" id="state" class="sdProperty" oninput="setSettings()">
         </div>
     </div>
 </body>
