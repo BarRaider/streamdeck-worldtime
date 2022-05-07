@@ -1,17 +1,26 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>BarRaider's World Time PI Settings</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
     <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
+    <script src="worldtime_pi.js"></script>
 </head>
 
 <body>
     <div class="sdpi-wrapper">
         <details class="message info">
-            <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.com</span> </summary>
+            <summary>For feedback/suggestions contact me at <span class="linkspan"
+                    onclick="openWebsite()">https://BarRaider.com</span> </summary>
         </details>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>Pro-Tip: Long-Press to copy current date/time to clipboard</summary>
+            </details>
+        </div>
+        <div class="sdpi-heading">Clock</div>
         <div type="select" class="sdpi-item">
             <div class="sdpi-item-label">Choose City</div>
             <select class="sdpi-item-value select setvalueSelect sdProperty" id="city" onchange="setSettings()">
@@ -204,6 +213,7 @@
                 <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option>
                 <option value="Asia/Hong_Kong">Asia/Hong_Kong</option>
                 <option value="Asia/Hovd">Asia/Hovd</option>
+                <option value="Asia/Kolkata">Asia/India (Kolkata)</option>
                 <option value="Asia/Irkutsk">Asia/Irkutsk</option>
                 <option value="Asia/Jakarta">Asia/Jakarta</option>
                 <option value="Asia/Jayapura">Asia/Jayapura</option>
@@ -416,53 +426,96 @@
             <div class="sdpi-item-label">Custom Title</div>
             <input class="sdpi-item-value sdProperty" placeholder="My City" value="" id="title" oninput="setSettings()">
         </div>
-        <div type="radio" class="sdpi-item" id="dvHourMode">
+        <div type="radio" class="sdpi-item" id="dvClockDisplay">
             <div class="sdpi-item-label">Clock Display</div>
             <div class="sdpi-item-value ">
                 <div class="sdpi-item-child">
-                    <input id="show24hours" class="sdProperty sdCheckbox" type="radio" name="hourMode" checked oninput="setSettings()">
+                    <input id="show24hours" class="sdProperty sdCheckbox" type="radio" name="hourMode" checked
+                        oninput="setSettings()">
                     <label for="show24hours" class="sdpi-item-label"><span></span>24 Hours</label>
                 </div>
                 <div class="sdpi-item-child">
-                    <input id="showAMPM" class="sdProperty sdCheckbox" type="radio" name="hourMode" checked oninput="setSettings()">
+                    <input id="showAMPM" class="sdProperty sdCheckbox" type="radio" name="hourMode" checked
+                        oninput="setSettings()">
                     <label for="showAMPM" class="sdpi-item-label"><span></span>Show AM/PM</label>
                 </div>
                 <div class="sdpi-item-child">
-                    <input id="hideAMPM" class="sdProperty sdCheckbox" type="radio" name="hourMode" oninput="setSettings()">
+                    <input id="hideAMPM" class="sdProperty sdCheckbox" type="radio" name="hourMode"
+                        oninput="setSettings()">
                     <label for="hideAMPM" class="sdpi-item-label"><span></span>Hide AM/PM</label>
                 </div>
                 <div class="sdpi-item-child">
-                    <input id="hideClock" class="sdProperty sdCheckbox" type="radio" name="hourMode" oninput="setSettings()">
+                    <input id="hideClock" class="sdProperty sdCheckbox" type="radio" name="hourMode"
+                        oninput="setSettings()">
                     <label for="hideClock" class="sdpi-item-label"><span></span>Hide Clock</label>
                 </div>
             </div>
         </div>
-        <div type="checkbox" class="sdpi-item" id="dvShowSeconds">
-            <div class="sdpi-item-label">Show Seconds</div>
-            <div class="sdpi-item-value">
-                <input id="showSeconds" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
-                <label for="showSeconds" class="sdpi-item-label"><span></span>Show time including seconds</label>
-            </div>
+        <div class="sdpi-item" id="dvClockFormat">
+            <div class="sdpi-item-label">Clock Format</div>
+            <select class="sdpi-item-value select sdProperty" id="timeFormat" oninput="setSettings()" value="hh:mm">
+                <option value="hh:mm" selected>hh:mm</option>
+                <option value="hh:mm:ss">hh:mm:ss</option>
+                <option value="hh">hh</option>
+                <option value="mm">mm</option>
+                <option value="ss">ss</option>
+            </select>
         </div>
-        <div class="sdpi-item">
-        </div>
+        <div class="sdpi-heading">Date</div>
         <div type="radio" class="sdpi-item" id="dvDateMode">
             <div class="sdpi-item-label">Date Display</div>
             <div class="sdpi-item-value ">
                 <div class="sdpi-item-child">
-                    <input id="showDateDDMM" class="sdProperty sdCheckbox" type="radio" name="dateMode" checked oninput="setSettings()">
+                    <input id="showDateDDMM" class="sdProperty sdCheckbox" type="radio" name="dateMode" checked
+                        oninput="setSettings()">
                     <label for="showDateDDMM" class="sdpi-item-label"><span></span>Show as dd/mm</label>
                 </div>
                 <div class="sdpi-item-child">
-                    <input id="showDateMMDD" class="sdProperty sdCheckbox" type="radio" name="dateMode" checked oninput="setSettings()">
+                    <input id="showDateMMDD" class="sdProperty sdCheckbox" type="radio" name="dateMode" checked
+                        oninput="setSettings()">
                     <label for="showDateMMDD" class="sdpi-item-label"><span></span>Show as mm/dd</label>
                 </div>
                 <div class="sdpi-item-child">
-                    <input id="hideDate" class="sdProperty sdCheckbox" type="radio" name="dateMode" oninput="setSettings()">
+                    <input id="hideDate" class="sdProperty sdCheckbox" type="radio" name="dateMode"
+                        oninput="setSettings()">
                     <label for="hideDate" class="sdpi-item-label"><span></span>Hide Date</label>
                 </div>
             </div>
         </div>
+        <div class="sdpi-heading">Sunrise/Sunset</div>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>For instructions how to show sunrise/sunset <span class="linkspan"> CLICK HERE</span></summary>
+                <p>You can find the latitude and longitude for your city by going to <span class="linkspan"
+                        onclick="openLatLong()">https://latlong.net</span></p>
+                <p>After setting it up, pressing the button will toggle between the current time and the sunrise/sunset
+                    time</p>
+            </details>
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Latitude</div>
+            <input class="sdpi-item-value sdProperty" placeholder="31.768318" inputmode="numeric"
+                pattern="(-?\d+(\.\d+)?)" type="number" value="" id="sunLat" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Longitude</div>
+            <input class="sdpi-item-value sdProperty" placeholder="35.213711" inputmode="numeric"
+                pattern="(-?\d+(\.\d+)?)" type="number" value="" id="sunLon" oninput="setSettings()">
+        </div>
+
+        <div class="sdpi-heading">General</div>
+        <div type="checkbox" class="sdpi-item" id="dvHideGlobe">
+            <div class="sdpi-item-label">Background</div>
+            <div class="sdpi-item-value">
+                <input id="hideBackground" class="sdProperty sdCheckbox" type="checkbox" value=""
+                    oninput="setSettings()">
+                <label for="hideBackground" class="sdpi-item-label"><span></span>Hide globe/sun background</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvHdn">
+            <input value="" type="hidden" id="state" class="sdProperty" oninput="setSettings()">
+        </div>
     </div>
 </body>
+
 </html>
