@@ -5,6 +5,12 @@ Supports both Windows and Mac
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v2.0
+- :new: Click the button to toggle between Date/Time or Sunrise/Sunset times for any location
+- Using the new `Clock Format` setting you can now span the time across multiple keys
+- Added `Asia/India` time zone as people struggled finding it under "Kolkata"
+- New `Hide Globe` setting allows to hide the background
+
 ## New in v1.8
 - Built-In time zone calculation. Removes the need for an external API. "`Server Error`" issues should now be resolved.
 
